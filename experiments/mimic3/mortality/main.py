@@ -3,12 +3,17 @@ import numpy as np
 import random
 import torch as th
 import torch.nn as nn
+import os
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
+
+import sys
+sys.path.insert(0, './')
 
 from tint.attr import (
     DynaMask,
@@ -70,11 +75,21 @@ def main(
         feature_size=31,
         n_state=2,
         hidden_size=200,
+        rnn="lstm",
         regres=True,
         loss="cross_entropy",
         lr=0.0001,
         l2=1e-3,
     )
+
+    checkpoint_dir = "/Users/raoulritter/time_interpret/lightning_logs/version_284594324373243311838938048774350742926/checkpoints"
+    
+    latest_checkpoint = None
+    if os.path.exists(checkpoint_dir):  
+        checkpoints = [ckpt for ckpt in os.listdir(checkpoint_dir) if ckpt.endswith('.ckpt')]
+        print("checkpoints", checkpoints)
+        if checkpoints:
+            latest_checkpoint = os.path.join(checkpoint_dir, sorted(checkpoints)[-1])
 
     # Train classifier
     trainer = Trainer(
@@ -86,6 +101,8 @@ def main(
             save_dir=".",
             version=random.getrandbits(128),
         ),
+        callbacks=[ModelCheckpoint(dirpath=checkpoint_dir)],
+        # resume_from_checkpoint=latest_checkpoint,
     )
     trainer.fit(classifier, datamodule=mimic3)
 
@@ -169,7 +186,7 @@ def main(
             model=nn.Sequential(
                 RNN(
                     input_size=x_test.shape[-1],
-                    rnn="gru",
+                    rnn="lstm",
                     hidden_size=x_test.shape[-1],
                     bidirectional=True,
                 ),
@@ -366,16 +383,16 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "deep_lift",
-            "dyna_mask",
+            # "deep_lift",
+            # "dyna_mask",
             "extremal_mask",
-            "fit",
-            "gradient_shap",
-            "integrated_gradients",
-            "lime",
-            "augmented_occlusion",
-            "occlusion",
-            "retain",
+            # "fit",
+            # "gradient_shap",
+            # "integrated_gradients",
+            # "lime",
+            # "augmented_occlusion",
+            # "occlusion",
+            # "retain",
         ],
         nargs="+",
         metavar="N",
@@ -434,7 +451,7 @@ def parse_args():
     parser.add_argument(
         "--output-file",
         type=str,
-        default="results.csv",
+        default="results_lstm.csv",
         help="Where to save the results.",
     )
     return parser.parse_args()

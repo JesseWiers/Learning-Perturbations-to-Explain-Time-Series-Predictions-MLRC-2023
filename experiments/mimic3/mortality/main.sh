@@ -23,7 +23,7 @@ function ctrl_c() {
 
 for fold in $(seq 0 4)
 do
-  python main.py --device "$device" --fold "$fold" --seed "$seed" &
+  python /Users/raoulritter/time_interpret/experiments/mimic3/mortality/main.py --device "$device" --fold "$fold" --seed "$seed" &
 
   # Support lower versions
   if ((BASH_VERSINFO[0] >= 4)) && ((BASH_VERSINFO[1] >= 3))

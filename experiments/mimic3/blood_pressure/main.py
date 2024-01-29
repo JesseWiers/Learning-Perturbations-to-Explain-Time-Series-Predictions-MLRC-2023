@@ -18,7 +18,8 @@ from tint.attr import (
 from tint.datasets import Mimic3
 from tint.metrics import mae, mse
 
-
+import sys
+sys.path.insert(0, './')
 from experiments.mimic3.blood_pressure.regressor import MimicRegressorNet
 
 

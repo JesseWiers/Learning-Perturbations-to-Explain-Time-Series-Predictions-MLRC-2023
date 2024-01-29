@@ -1,7 +1,7 @@
-#!/bin/bash
+# !/bin/bash
 
 processes=${processes:-5}
-device=${device:-cpu}
+device=${device:-mps}
 seed=${seed:-42}
 
 while [ $# -gt 0 ]

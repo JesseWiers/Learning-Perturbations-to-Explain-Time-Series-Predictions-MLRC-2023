@@ -209,12 +209,14 @@ class Mimic3(DataModule):
 
         den = pd.read_sql_query(denquery, con)
 
-        # drop patients with less than 48 hour
-        den["los_icu_hr"] = (den.outtime - den.intime).astype("timedelta64[h]")
+        # # drop patients with less than 48 hour
+        # den["los_icu_hr"] = (den.outtime - den.intime).astype("timedelta64[h]")
+        # # den["los_icu_hr"] = den["los_icu_hr"].astype("timedelta64[h]")
+        den["los_icu_hr"] = (den.outtime - den.intime).dt.total_seconds() / 3600
+        print(den["los_icu_hr"].head())
         den = den[(den.los_icu_hr >= 48)]
         den = den[(den.age < 300)]
-        den.drop("los_icu_hr", 1, inplace=True)
-
+        den.drop("los_icu_hr", axis=1, inplace=True)
         # clean up
         den["adult_icu"] = np.where(
             den["first_careunit"].isin(["PICU", "NICU"]), 0, 1
@@ -248,7 +250,7 @@ class Mimic3(DataModule):
                 "outtime",
                 "first_careunit",
             ],
-            1,
+            axis=1,
             inplace=True,
         )
 
