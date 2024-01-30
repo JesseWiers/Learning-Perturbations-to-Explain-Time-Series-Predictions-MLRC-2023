@@ -13,31 +13,69 @@ class PatchClassifier(nn.Module):
     def __init__(self, feature_size: int, n_state: int, dropout: float = 0.5):
         super().__init__()
         self.n_state = n_state
-
-        # Configure the PatchTST model
+        
+        # # Configure the PatchTST model
+        # config = PatchTSTConfig(
+        #     num_input_channels=feature_size,
+        #     context_length=177,
+        #     patch_length=12,
+        #     stride=12,
+        #     use_cls_token=True,
+        #     # Other configurations as needed
+        # )
         config = PatchTSTConfig(
-            num_input_channels=feature_size,
-            context_length=77,  # Adjust based on your sequence length
+            num_input_channels=feature_size,  # feature_size should match the number of features in your data
+            context_length=47,  # Adjusted to match input sequence length
             patch_length=12,
             stride=12,
             use_cls_token=True,
             # Other configurations as needed
         )
+
         self.patch_tst = PatchTSTModel(config)
 
-        # Regressor or classification head
-        self.classifier = nn.Sequential(
-            nn.BatchNorm1d(num_features=config.d_model),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(config.d_model, n_state)
-        )
+        # Placeholder for BatchNorm1d, will be initialized after knowing the number of features
+        self.bn = None
+        self.dropout = nn.Dropout(dropout)
+        self.linear = nn.Linear(config.d_model, n_state)
 
     def forward(self, x):
         x = self.patch_tst(x).last_hidden_state
-        # Assuming we use the output corresponding to the CLS token
         cls_output = x[:, 0]
-        return self.classifier(cls_output)
+
+        # Dynamically initialize BatchNorm1d with the correct number of features
+        if self.bn is None:
+            self.bn = nn.BatchNorm1d(cls_output.size(1))
+            self.bn = self.bn.to(cls_output.device)  # Move to the same device as the input
+
+        cls_output = self.bn(cls_output)
+        cls_output = self.dropout(cls_output)
+        return self.linear(cls_output)
+
+    #     # Configure the PatchTST model
+    #     config = PatchTSTConfig(
+    #         num_input_channels=feature_size,
+    #         context_length=77,  # Adjust based on your sequence length
+    #         patch_length=12,
+    #         stride=12,
+    #         use_cls_token=True,
+    #         # Other configurations as needed
+    #     )
+    #     self.patch_tst = PatchTSTModel(config)
+
+    #     # Regressor or classification head
+    #     self.classifier = nn.Sequential(
+    #         nn.BatchNorm1d(num_features=config.d_model),
+    #         nn.GELU(),
+    #         nn.Dropout(dropout),
+    #         nn.Linear(config.d_model, n_state)
+    #     )
+
+    # def forward(self, x):
+    #     x = self.patch_tst(x).last_hidden_state
+    #     # Assuming we use the output corresponding to the CLS token
+    #     cls_output = x[:, 0]
+    #     return self.classifier(cls_output)
 
 class PatchClassifierNet(pl.LightningModule):
     def __init__(

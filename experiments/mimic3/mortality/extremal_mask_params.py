@@ -7,6 +7,11 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import Union
 
+
+import sys
+sys.path.insert(0, '../../..')
+
+
 from tint.attr import ExtremalMask
 from tint.attr.models import ExtremalMaskNet
 from tint.datasets import Mimic3
@@ -294,7 +299,7 @@ def parse_args():
     parser.add_argument(
         "--n-jobs",
         type=int,
-        default=1,
+        default=5,
         help="The number of parallel jobs.",
     )
     return parser.parse_args()

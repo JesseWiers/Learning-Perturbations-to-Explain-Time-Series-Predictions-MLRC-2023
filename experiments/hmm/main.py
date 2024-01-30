@@ -10,9 +10,6 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
-import sys
-sys.path.insert(0, './')
-
 from tint.attr import (
     DynaMask,
     ExtremalMask,
@@ -38,6 +35,7 @@ from tint.metrics.white_box import (
     auprc,
 )
 from tint.models import MLP, RNN
+
 
 from experiments.hmm.classifier import StateClassifierNet
 
@@ -300,8 +298,6 @@ def main(
 
     with open(output_file, "a") as fp, lock:
         for k, v in attr.items():
-            v.to(device)
-            true_saliency.to(device)
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")
             fp.write(k + ",")
