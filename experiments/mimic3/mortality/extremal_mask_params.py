@@ -45,22 +45,22 @@ def objective(
         rnn="gru",
         hidden_size=input_shape,
     )
-    _bi_gru = RNN(
-        input_size=input_shape,
-        rnn="gru",
-        hidden_size=input_shape,
-        bidirectional=True,
-    )
-    _bi_mlp = MLP([2 * input_shape, input_shape])
-    bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
+    # _bi_gru = RNN(
+    #     input_size=input_shape,
+    #     rnn="gru",
+    #     hidden_size=input_shape,
+    #     bidirectional=True,
+    # )
+    # _bi_mlp = MLP([2 * input_shape, input_shape])
+    # bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
     model_dict = {
         "none": None,
         "gru": gru,
-        "bi_gru": bi_gru,
+        # "bi_gru": bi_gru,
     }
 
     # Select a set of hyperparameters to test
-    model = trial.suggest_categorical("model", ["none", "gru", "bi_gru"])
+    model = trial.suggest_categorical("model", ["none", "gru"])
 
     # Define model and trainer given the hyperparameters
     version = trial.study.study_name + "_" + str(trial._trial_id)
@@ -94,12 +94,13 @@ def objective(
     ).to(device)
 
     # Compute x_avg for the baseline
-    if baseline == "average":
-        x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
-    elif baseline == "zeros":
-        x_avg = 0
-    else:
-        raise NotImplementedError()
+    for baseline in ["average", "zeros"]:
+        if baseline == "average":
+            x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
+        elif baseline == "zeros":
+            x_avg = 0
+        else:
+            raise NotImplementedError()
 
     # Compute the metric
     if metric == "accuracy":
@@ -209,7 +210,7 @@ def main(
     )
 
     # Define study
-    for metric in metrics:  # Loop over metrics
+    for metric in metrics: 
         # Define study
         direction = "minimize" if metric in ["accuracy", "log_odds", "sufficiency"] else "maximize"
         study = optuna.create_study(direction=direction, pruner=pruner)
@@ -284,7 +285,7 @@ def parse_args():
     parser.add_argument(
         "--n-trials",
         type=int,
-        default=1,
+        default=10,
         help="The number of trials.",
     )
     parser.add_argument(
