@@ -147,7 +147,7 @@ def objective(
 
 def main(
     pruning: bool,
-    metric: str,
+    metrics: list,  # Change to list
     topk: float,
     baseline: str,
     device: str,
@@ -156,6 +156,7 @@ def main(
     timeout: int,
     n_jobs: int,
 ):
+        
     # Get accelerator and device
     accelerator = device.split(":")[0]
     device_id = 1
@@ -208,42 +209,38 @@ def main(
     )
 
     # Define study
-    if metric in ["accuracy", "log_odds", "sufficiency"]:
-        direction = "minimize"
-    elif metric in ["comprehensiveness", "cross_entropy"]:
-        direction = "maximize"
-    else:
-        raise NotImplementedError
-    study = optuna.create_study(direction=direction, pruner=pruner)
+    for metric in metrics:  # Loop over metrics
+        # Define study
+        direction = "minimize" if metric in ["accuracy", "log_odds", "sufficiency"] else "maximize"
+        study = optuna.create_study(direction=direction, pruner=pruner)
 
-    # Find best trial
-    study.optimize(
-        lambda t: objective(
-            trial=t,
-            x_val=x_val,
-            classifier=classifier,
-            metric=metric,
-            topk=topk,
-            baseline=baseline,
-            device=device,
-            accelerator=accelerator,
-            device_id=device_id,
-        ),
-        n_trials=n_trials,
-        timeout=timeout,
-        n_jobs=n_jobs,
-    )
+        # Find best trial
+        study.optimize(
+            lambda t: objective(
+                trial=t,
+                x_val=x_val,
+                classifier=classifier,
+                metric=metric,  # Pass current metric
+                topk=topk,
+                baseline=baseline,
+                device=device,
+                accelerator=accelerator,
+                device_id=device_id,
+            ),
+            n_trials=n_trials,
+            timeout=timeout,
+            n_jobs=n_jobs,
+        )
 
-    # Write results
-    with open("extremal_mask_params.csv", "a") as fp:
-        for trial in study.trials:
-            fp.write(str(trial.value) + ",")
-            fp.write(baseline + ",")
-            fp.write(str(topk) + ",")
-            for value in trial.params.values():
-                fp.write(str(value) + ",")
-            fp.write("\n")
-
+        # Write results for each metric
+        with open(f"extremal_mask_params_{metric}.csv", "a") as fp:
+            for trial in study.trials:
+                fp.write(str(trial.value) + ",")
+                fp.write(baseline + ",")
+                fp.write(str(topk) + ",")
+                for value in trial.params.values():
+                    fp.write(str(value) + ",")
+                fp.write("\n")
 
 def parse_args():
     parser = ArgumentParser()
@@ -256,9 +253,9 @@ def parse_args():
     )
     parser.add_argument(
         "--metric",
-        type=str,
-        default="cross_entropy",
-        help="Which metric to use as benchmark.",
+        nargs="+",  # Allows multiple values
+        default=["accuracy", "log_odds", "sufficiency", "comprehensiveness", "cross_entropy" ],  # Default to a list with one element
+        help="Which metrics to use as benchmarks.",
     )
     parser.add_argument(
         "--topk",
@@ -309,7 +306,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         pruning=args.pruning,
-        metric=args.metric,
+        metrics=args.metric,  # Pass the list of metrics
         topk=args.topk,
         baseline=args.baseline,
         device=args.device,
