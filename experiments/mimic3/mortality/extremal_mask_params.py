@@ -94,13 +94,12 @@ def objective(
     ).to(device)
 
     # Compute x_avg for the baseline
-    for baseline in ["average", "zeros"]:
-        if baseline == "average":
-            x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
-        elif baseline == "zeros":
-            x_avg = 0
-        else:
-            raise NotImplementedError()
+    if baseline == "average":
+        x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
+    elif baseline == "zeros":
+        x_avg = 0
+    else:
+        raise NotImplementedError()
 
     # Compute the metric
     if metric == "accuracy":
@@ -127,7 +126,7 @@ def objective(
             baselines=x_avg,
             topk=topk,
         )
-    if metric == "logg_odds":
+    if metric == "log_odds":
         return log_odds(
             classifier,
             x_val,
