@@ -1,5 +1,4 @@
-# Project Name
-Reproducibility Study of Learning Perturbations to Explain Time Series Predictions
+# Reproducibility Study of Learning Perturbations to Explain Time Series Predictions
 
 ## Overview
 This project aims to investigate and reproduce the findings related to [Learning Perturbations to Explain Time Series Predictions](https://doi.org/10.48550/arXiv.2305.18840) (Joseph Engehuhard 2023). . Our study includes a range of experiments with Hidden Markov Models (HMM), MIMIC-III dataset analysis, and our contribution involving an LSTM model.
