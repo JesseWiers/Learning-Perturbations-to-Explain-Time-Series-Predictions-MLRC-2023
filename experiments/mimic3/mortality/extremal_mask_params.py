@@ -11,6 +11,8 @@ from typing import Union
 import sys
 sys.path.insert(0, '../../..')
 
+# print(sys.path) # If you get an error experiments uncomment where you are at 
+# please point to the right path if you get an error
 
 from tint.attr import ExtremalMask
 from tint.attr.models import ExtremalMaskNet
@@ -45,18 +47,18 @@ def objective(
         rnn="gru",
         hidden_size=input_shape,
     )
-    # _bi_gru = RNN(
-    #     input_size=input_shape,
-    #     rnn="gru",
-    #     hidden_size=input_shape,
-    #     bidirectional=True,
-    # )
-    # _bi_mlp = MLP([2 * input_shape, input_shape])
-    # bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
+    _bi_gru = RNN(
+        input_size=input_shape,
+        rnn="gru",
+        hidden_size=input_shape,
+        bidirectional=True,
+    )
+    _bi_mlp = MLP([2 * input_shape, input_shape])
+    bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
     model_dict = {
         "none": None,
         "gru": gru,
-        # "bi_gru": bi_gru,
+        "bi_gru": bi_gru,
     }
 
     # Select a set of hyperparameters to test

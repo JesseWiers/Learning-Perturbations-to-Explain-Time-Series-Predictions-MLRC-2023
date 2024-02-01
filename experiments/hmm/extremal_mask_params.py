@@ -13,8 +13,14 @@ from tint.datasets import HMM
 from tint.metrics.white_box import aup, aur, information, entropy
 from tint.models import MLP, RNN
 
-from experiments.hmm.classifier import StateClassifierNet
 
+import sys
+sys.path.insert(0, '../')
+
+print(sys.path) # If you get an error experiments uncomment where you are at 
+# please point to the right path if you get an error
+
+from experiments.hmm.classifier import StateClassifierNet
 
 def objective(
     trial: optuna.trial.Trial,

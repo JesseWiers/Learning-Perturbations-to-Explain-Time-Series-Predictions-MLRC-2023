@@ -10,6 +10,14 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
+
+import sys
+sys.path.insert(0, './') # Path: experiments/hmm/main.py
+
+# print(sys.path) # If you get an error experiments uncomment where you are at 
+# please point to the right path if you get an error
+
+
 from tint.attr import (
     DynaMask,
     ExtremalMask,
@@ -49,6 +57,7 @@ def main(
     lambda_1: float = 1.0,
     lambda_2: float = 1.0,
     output_file: str = "results.csv",
+    model: str = "gru",
 ):
     # If deterministic, seed everything
     if deterministic:
@@ -171,12 +180,13 @@ def main(
             model=nn.Sequential(
                 RNN(
                     input_size=x_test.shape[-1],
-                    rnn="gru",
+                    rnn=model,
                     hidden_size=x_test.shape[-1],
                     bidirectional=True,
                 ),
                 MLP([2 * x_test.shape[-1], x_test.shape[-1]]),
             ),
+            
             lambda_1=lambda_1,
             lambda_2=lambda_2,
             optim="adam",
@@ -374,6 +384,13 @@ def parse_args():
         default="results.csv",
         help="Where to save the results.",
     )
+    
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="gru",
+        help="Which model to use.",
+    )
     return parser.parse_args()
 
 
@@ -384,6 +401,7 @@ if __name__ == "__main__":
         device=args.device,
         fold=args.fold,
         seed=args.seed,
+        model=args.model,
         deterministic=args.deterministic,
         lambda_1=args.lambda_1,
         lambda_2=args.lambda_2,

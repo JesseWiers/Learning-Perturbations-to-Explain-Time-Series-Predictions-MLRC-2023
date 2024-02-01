@@ -53,6 +53,7 @@ def main(
     lambda_1: float = 1.0,
     lambda_2: float = 1.0,
     output_file: str = "results.csv",
+    model_type: str = "gru",
 ):
     # If deterministic, seed everything
     if deterministic:
@@ -186,7 +187,7 @@ def main(
             model=nn.Sequential(
                 RNN(
                     input_size=x_test.shape[-1],
-                    rnn="lstm",
+                    rnn=model_type,
                     hidden_size=x_test.shape[-1],
                     bidirectional=True,
                 ),
@@ -454,6 +455,12 @@ def parse_args():
         default="results_rest.csv",
         help="Where to save the results.",
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="gru",
+        help="Which model to use for extremal mask.",
+    )
     return parser.parse_args()
 
 
@@ -463,6 +470,7 @@ if __name__ == "__main__":
         explainers=args.explainers,
         areas=args.areas,
         device=args.device,
+        model_type=args.model,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,
